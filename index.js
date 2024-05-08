@@ -1,22 +1,43 @@
 import Express from "express";
 import pg from "pg"
 import dotenv from "dotenv"
+import {postgresClient} from "./lib/db_setup.js";
+import { useRoutes } from "./lib/readRoutes.js";
+import { printRoutes } from "./src/utils/listOfPaths.js";
+import path from 'path'
 dotenv.config()
+const port = process.env.PORT;
 
-const app = Express();
-const db = new pg.Client({
-    user: process.env.PG_USER,
-    host: process.env.PG_HOST,
-    password: process.env.PG_PASSWORD,
-    database: process.env.PG_DATABASE,
-    port: process.env.PG_PORT,
-  });
+
+var app = Express();
+
+(async () =>
+{ 
+  const __dirname = path.dirname(new URL(import.meta.url).pathname);
+  const routesDirectory = path.join(__dirname, "./src/routes");  
+  try{
+    /** adding all the routes using app.use() */
+    app =await useRoutes(routesDirectory, app); 
+
+    app.listen(port, async () => {
+      console.log("Server running on port:", port);
+      try {
+        const result = await postgresClient();
+        console.log("postgres successfully connected");
+
+        /** printing all available routes in console*/
+        printRoutes(app);
+        
+      } catch (e) {
+        throw e;
+      }
+    })
+    
+    
+
+  } catch(e){
+    throw e;s
+  }
   
-app.listen(3000,()=>{
-    console.log("Server running");
-    db.connect().then(()=>{
-        console.log("succesfully connected to postgres")
-    }).catch((e)=>{
-        console.log(e)
-    });
-})
+})();
+
