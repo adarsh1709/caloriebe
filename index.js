@@ -5,8 +5,9 @@ import { postgresClient, dbConnection } from "./lib/db_setup.js";
 import { useRoutes } from "./lib/readRoutes.js";
 import { printRoutes } from "./src/utils/listOfPaths.js";
 import path from 'path'
+import {xyz,wordTrie} from "./src/utils/suggestion.js";
 dotenv.config()
-const port = process.env.PORT;
+const port = "5431";
 
 
 var app = Express();
@@ -23,6 +24,8 @@ var app = Express();
       console.log("Server running on port:", port);
       try {
         const result = await dbConnection();
+        const random = await xyz();
+
         console.log("postgres successfully connected");
 
         /** printing all available routes in console*/
