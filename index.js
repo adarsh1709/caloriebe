@@ -1,7 +1,7 @@
 import Express from "express";
 import pg from "pg"
 import dotenv from "dotenv"
-import {postgresClient} from "./lib/db_setup.js";
+import { postgresClient, dbConnection } from "./lib/db_setup.js";
 import { useRoutes } from "./lib/readRoutes.js";
 import { printRoutes } from "./src/utils/listOfPaths.js";
 import path from 'path'
@@ -22,7 +22,7 @@ var app = Express();
     app.listen(port, async () => {
       console.log("Server running on port:", port);
       try {
-        const result = await postgresClient();
+        const result = await dbConnection();
         console.log("postgres successfully connected");
 
         /** printing all available routes in console*/
