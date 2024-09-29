@@ -33,7 +33,7 @@ async function startServer()
     const server = app.listen(port, async () => {
       console.log("Server running on port:", port);
       try {
-        await sequelize.sync({force:true});
+        await sequelize.sync({force:false});
 
         // const random = await xyz();
         //initilizing redis 
