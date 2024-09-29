@@ -30,7 +30,18 @@ class ChatRoom extends Sequelize.Model {
       },
       userlist: {
         allowNull: true,
-        type: DataTypes.ARRAY(DataTypes.INTEGER)
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
+        defaultValue: []
+      },
+      userid1:{
+        allowNull: true,
+        type: DataTypes.INTEGER,
+        defaultValue: null
+      },
+      userid2:{
+        allowNull: true,
+        type: DataTypes.INTEGER,
+        defaultValue: null
       }
     }, {
       sequelize, // Pass the connection instance
@@ -39,17 +50,36 @@ class ChatRoom extends Sequelize.Model {
   }
 
   // Static method using this.getTableName()
-  static async addUser(roomId, userId) {
+  static async removeUser(roomId, userId) {
     try {
       const query = `
-        UPDATE ${this.getTableName()}  -- Dynamically get the table name
-        SET userlist = array_append(userlist, ${userId})
-        WHERE id = ${roomId}
+        UPDATE "chatRooms" 
+        SET "userlist" = array_remove(userlist, ${userId})
+        WHERE "id" = ${roomId}
       `;
 
       const result = await sequelize.query(query, {
         type: sequelize.QueryTypes.UPDATE
       });
+      return result;
+    } catch (error) {
+      throw new Error(`Error while removing user from room list: ${error}`);
+    }
+  }
+
+  // remove user from room users list
+  static async addUser(roomId, userId) {
+    try {
+      const query = `
+        UPDATE "chatRooms" 
+        SET "userlist" = array_append(userlist, ${userId})
+        WHERE "id" = ${roomId}
+      `;
+
+      const result = await sequelize.query(query, {
+        type: sequelize.QueryTypes.UPDATE
+      });
+      
       return result;
     } catch (error) {
       throw new Error(`Error while adding new user to room list: ${error}`);
@@ -60,7 +90,7 @@ class ChatRoom extends Sequelize.Model {
   static async getUserList(roomId) {
     try {
       const query = `
-        select userlist from ${this.getTableName()}
+        select userlist from ${getTableName()}
         where id=${roomId}
       `;
 
@@ -73,15 +103,20 @@ class ChatRoom extends Sequelize.Model {
     }
   }
 
-  static async createRoom(roomName) {
+  static async createRoom(roomName,userid1,userid2) {
 
     try{
         /** creating new room and saving it to database*/
       let roomObject={
         roomname: roomName,
-        userlist: null
+        userlist: null,
+        userid1:userid1,
+        userid2:userid2
       }
-      await this.getTableName().create(roomObject);
+      
+      const result=await ChatRoom.create(roomObject);
+      const roomId=result.dataValues.id;
+      console.log(roomId);
       return roomId;
     }
     catch(error){
